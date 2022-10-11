@@ -56,6 +56,10 @@ if __name__ == '__main__':
     fits = []
     for ind in pop:
         fits += ind.fitness.values
+    length = len(pop)
+    mean = sum(fits) / length
+    sum2 = sum(f ** 2 for f in fits)
+    std = abs(sum2 / length - mean ** 2) ** 0.5
 
     # var for # of generations
     g = 0
