@@ -1,11 +1,8 @@
 import numpy as np
-import preprocess
+from utilities import data_prep
 import random
-from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
 from sklearn.model_selection import StratifiedKFold
-
 
 FRACTION = 0.2
 
