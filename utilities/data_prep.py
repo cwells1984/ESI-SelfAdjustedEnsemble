@@ -84,7 +84,7 @@ def breast_cancer_wisconsin(csv_file, display_mode=False):
         print(f'Are null values in Bare Nuclei? {n_null}\n')
 
     # Replace the target variable values with 2=>"False" and 4=>"True"
-    df['Malignant'] = df['Class'].map({4: True, 2: False})
+    df['Malignant'] = df['Class'].map({4: 1, 2: 0})
     df.drop(columns=['Class'], inplace=True)
     print(df['Malignant'].value_counts())
 
