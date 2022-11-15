@@ -1,5 +1,5 @@
-from sklearn.linear_model import LogisticRegression
 from utilities import accuracy, preprocess
+import copy
 import numpy as np
 import random
 
@@ -17,10 +17,10 @@ def calc_best_accuracy(ensemble_output, y_test):
 
 
 # Creates a list of a given number of classifiers
-def create_ensemble(num_classifiers):
+def create_ensemble(num_classifiers, clf_to_clone):
     ensemble = []
     for i in range(num_classifiers):
-        ensemble += [LogisticRegression()]
+        ensemble += [copy.deepcopy(clf_to_clone)]
     return ensemble
 
 
