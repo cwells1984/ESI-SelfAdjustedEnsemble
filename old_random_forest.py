@@ -4,6 +4,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import RandomizedSearchCV
+from sklearn.model_selection import GridSearchCV
 
 
 # Pre-process the data file
@@ -108,21 +109,32 @@ if __name__ == '__main__':
                    'bootstrap': bootstrap}
 
     # Create the classifier
-    #rf = RandomForestClassifier()
-    #rf_random = RandomizedSearchCV(estimator=rf, param_distributions=random_grid, n_iter=1000, cv=5, verbose=2, random_state=42, n_jobs=-1)
-    #rf_random.fit(X, y)
-    #print(rf_random.best_params_)
+    # rf = RandomForestClassifier()
+    # rf_random = RandomizedSearchCV(estimator=rf, param_distributions=random_grid, n_iter=1000, cv=5, verbose=2, random_state=42, n_jobs=-1)
+    # rf_random.fit(X, y)
+    # print(rf_random.best_params_)
+
+    # Tune w/grid search
+    max_depth = [2, 8, 16]
+    n_estimators = [64, 128, 256]
+    param_grid = dict(max_depth=max_depth, n_estimators=n_estimators)
+    dfrst = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth)
+    grid = GridSearchCV(estimator=dfrst, param_grid=param_grid, cv=5)
+    grid_results = grid.fit(X, y)
+    print("Best: {0}, using {1}".format(grid_results.cv_results_['mean_test_score'], grid_results.best_params_))
+    results_df = pd.DataFrame(grid_results.cv_results_)
+    results_df
 
     # Create a tuned classifier
     # https://towardsdatascience.com/hyperparameter-tuning-the-random-forest-in-python-using-scikit-learn-28d2aa77dd74
     # best parameters found above:
     # {'n_estimators': 1600, 'min_samples_split': 2, 'min_samples_leaf': 2, 'max_depth': 80, 'bootstrap': False}
-    rf_tuned = RandomForestClassifier(n_estimators=400, min_samples_split=10, min_samples_leaf=4, max_depth=100, bootstrap=True)
+    # rf_tuned = RandomForestClassifier(n_estimators=400, min_samples_split=10, min_samples_leaf=4, max_depth=100, bootstrap=True)
 
     # Run the default classifier
     acc = eval_classifier(RandomForestClassifier(), X, y)
     print(f'Default Random Forest accuracy={np.mean(acc):.3f} {chr(177)}{np.std(acc):.3f}')
 
     # Run the tuned classifier
-    acc = eval_classifier(rf_tuned, X, y)
+    acc = eval_classifier(RandomForestClassifier(max_depth=8, n_estimators=64), X, y)
     print(f'Tuned Random Forest accuracy={np.mean(acc):.3f} {chr(177)}{np.std(acc):.3f}')
