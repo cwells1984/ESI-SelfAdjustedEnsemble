@@ -1,14 +1,15 @@
 from deap import algorithms, base, creator, gp, tools
-from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold
+from sklearn.tree import DecisionTreeClassifier
 from utilities import accuracy, lr_ensemble, data_prep, preprocess
 import numpy as np
 
 # GLOBAL SETTINGS HERE
 NUM_CLASSIFIERS = 5
-BASE_CLASSIFIER = LogisticRegression(class_weight='balanced')
-N_POP = 200
-N_GEN = 100
+FRACTION=0.2
+BASE_CLASSIFIER = DecisionTreeClassifier()
+N_POP = 100
+N_GEN = 50
 PROB_CX = 0.5
 PROB_MUT = 0.2
 
@@ -74,6 +75,7 @@ creator.create("Individual", gp.PrimitiveTree, fitness=creator.FitnessMax)
 # +, -, x, and constant values 0.0 - 0.9
 pset = gp.PrimitiveSet("MAIN", NUM_CLASSIFIERS)
 pset.addPrimitive(add_, 2)
+pset.addPrimitive(sub_, 2)
 pset.addPrimitive(mul_, 2)
 pset.addTerminal(0.0)
 pset.addTerminal(0.1)
@@ -88,7 +90,7 @@ pset.addTerminal(0.9)
 
 # Setup toolbox
 toolbox = base.Toolbox()
-toolbox.register("expr", gp.genGrow, pset=pset, min_=2, max_=5)
+toolbox.register("expr", gp.genGrow, pset=pset, min_=1, max_=5)
 toolbox.register("individual", tools.initIterate, creator.Individual, toolbox.expr)
 toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 toolbox.register("compile", gp.compile, pset=pset)
@@ -106,6 +108,7 @@ def evaluate(individual):
     tree_output = []
     for i in range(len(ensemble_output[0])):
         res = func(ensemble_output[0][i], ensemble_output[1][i], ensemble_output[2][i], ensemble_output[3][i], ensemble_output[4][i])
+        #res = func(ensemble_output[0][i], ensemble_output[1][i], ensemble_output[2][i], ensemble_output[3][i], ensemble_output[4][i], ensemble_output[5][i], ensemble_output[6][i], ensemble_output[7][i], ensemble_output[8][i], ensemble_output[9][i])
         if res is None or type(res) is float:
             return 0.0,
         tree_output.append(res)
@@ -132,14 +135,14 @@ if __name__ == '__main__':
 
     # pre-process the data and prepare np arrays...
     # ... for Breast Cancer Wisconsin
-    df = data_prep.breast_cancer_wisconsin("./datasets/breast-cancer-wisconsin.data")
-    X = df.loc[:, df.columns != 'Malignant'].values
-    y = df.loc[:, df.columns == 'Malignant'].values.ravel()
+    # df = data_prep.breast_cancer_wisconsin("./datasets/breast-cancer-wisconsin.data")
+    # X = df.loc[:, df.columns != 'Malignant'].values
+    # y = df.loc[:, df.columns == 'Malignant'].values.ravel()
 
     # ... for Liver
-    # df = data_prep.bupa_liver_disorders("./datasets/bupa.data")
-    # X = df.loc[:, df.columns != 'class'].values
-    # y = df.loc[:, df.columns == 'class'].values.ravel()
+    df = data_prep.bupa_liver_disorders("./datasets/bupa.data")
+    X = df.loc[:, df.columns != 'class'].values
+    y = df.loc[:, df.columns == 'class'].values.ravel()
 
     # create the ensemble
     ensemble = lr_ensemble.create_ensemble(num_classifiers=NUM_CLASSIFIERS, clf_to_clone=BASE_CLASSIFIER)
@@ -157,7 +160,7 @@ if __name__ == '__main__':
 
         # train each item of the ensemble on a subset of the training data
         for clf in ensemble:
-            lr_ensemble.train_classifier_on_subset(0.2, clf, X[train_index], y[train_index])
+            lr_ensemble.train_classifier_on_subset(FRACTION, clf, X[train_index], y[train_index])
 
         # take the output of the ensembles' predictions on the training data
         # this is how we will train the aggregator, the test data will be untouched
