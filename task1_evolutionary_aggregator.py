@@ -1,10 +1,12 @@
 from deap import algorithms, base, creator, gp, tools
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold
 from utilities import accuracy, lr_ensemble, data_prep, preprocess
 import numpy as np
 
 # GLOBAL SETTINGS HERE
 NUM_CLASSIFIERS = 5
+BASE_CLASSIFIER = LogisticRegression(class_weight='balanced')
 N_POP = 200
 N_GEN = 100
 PROB_CX = 0.5
@@ -128,13 +130,19 @@ toolbox.register("evaluate", evaluate)
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
 
-    # pre-process the data and prepare np arrays
-    df_liver = data_prep.bupa_liver_disorders("./datasets/bupa.data")
-    X = df_liver.loc[:, df_liver.columns != 'class'].values
-    y = df_liver.loc[:, df_liver.columns == 'class'].values.ravel()
+    # pre-process the data and prepare np arrays...
+    # ... for Breast Cancer Wisconsin
+    df = data_prep.breast_cancer_wisconsin("./datasets/breast-cancer-wisconsin.data")
+    X = df.loc[:, df.columns != 'Malignant'].values
+    y = df.loc[:, df.columns == 'Malignant'].values.ravel()
+
+    # ... for Liver
+    # df = data_prep.bupa_liver_disorders("./datasets/bupa.data")
+    # X = df.loc[:, df.columns != 'class'].values
+    # y = df.loc[:, df.columns == 'class'].values.ravel()
 
     # create the ensemble
-    ensemble = lr_ensemble.create_ensemble(num_classifiers=NUM_CLASSIFIERS)
+    ensemble = lr_ensemble.create_ensemble(num_classifiers=NUM_CLASSIFIERS, clf_to_clone=BASE_CLASSIFIER)
 
     # accuracies to average across folds
     avg_best_base = []
