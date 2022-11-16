@@ -10,7 +10,7 @@ FRACTION=0.2
 BASE_CLASSIFIER = DecisionTreeClassifier()
 N_POP = 100
 N_GEN = 50
-PROB_CX = 0.5
+PROB_CX = 0.0
 PROB_MUT = 0.2
 
 
