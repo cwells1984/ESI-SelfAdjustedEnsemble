@@ -1,6 +1,6 @@
 import numpy as np
 from utilities import accuracy, data_prep
-from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import StratifiedKFold
 
 
@@ -23,18 +23,18 @@ if __name__ == '__main__':
 
     # pre-process the data and prepare np arrays...
     # ... for Breast Cancer Wisconsin
-    df = data_prep.breast_cancer_wisconsin("./datasets/breast-cancer-wisconsin.data")
-    X = df.loc[:, df.columns != 'Malignant'].values
-    y = df.loc[:, df.columns == 'Malignant'].values.ravel()
+    # df = data_prep.breast_cancer_wisconsin("./datasets/breast-cancer-wisconsin.data")
+    # X = df.loc[:, df.columns != 'Malignant'].values
+    # y = df.loc[:, df.columns == 'Malignant'].values.ravel()
 
     # ... for Liver
-    # df = data_prep.bupa_liver_disorders("./datasets/bupa.data")
-    # X = df.loc[:, df.columns != 'class'].values
-    # y = df.loc[:, df.columns == 'class'].values.ravel()
+    df = data_prep.bupa_liver_disorders("./datasets/bupa.data")
+    X = df.loc[:, df.columns != 'class'].values
+    y = df.loc[:, df.columns == 'class'].values.ravel()
 
     # create our classifier
-    lr = LogisticRegression()
-    accuracies = calculate_clf_accuracy(lr, X, y)
+    dt = DecisionTreeClassifier()
+    accuracies = calculate_clf_accuracy(dt, X, y)
 
     print(f"CLASSIFIER ACCURACY= {np.mean(accuracies)*100:.3f}% ± {np.std(accuracies):.3f}")
 
