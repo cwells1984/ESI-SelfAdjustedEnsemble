@@ -8,7 +8,7 @@ import numpy as np
 NUM_CLASSIFIERS = 5
 FRACTION=0.2
 BASE_CLASSIFIER = DecisionTreeClassifier()
-N_POP = 100
+N_POP = 200
 N_GEN = 50
 PROB_CX = 0.5
 PROB_MUT = 0.2
@@ -207,6 +207,6 @@ if __name__ == '__main__':
 
     # Print the average accuracy of the majority vote and evolved aggregator across folds
     print("==============================")
-    print(f"AVERAGE BEST BASE ACCURACY= {np.mean(best_base) * 100:.3f}% ± {np.std(best_base):.3f}")
+    print(f"AVERAGE BEST BASE ACCURACY= {np.mean(avg_best_base) * 100:.3f}% ± {np.std(avg_best_base):.3f}")
     print(f"AVERAGE MAJORITY VOTE ACCURACY= {np.mean(maj_accuracies) * 100:.3f}% ± {np.std(maj_accuracies):.3f}")
     print(f"AVERAGE AGGREGATOR VOTE ACCURACY= {np.mean(agg_accuracies) * 100:.3f}% ± {np.std(agg_accuracies):.3f}")
