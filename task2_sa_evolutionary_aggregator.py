@@ -1,6 +1,6 @@
 from sklearn.model_selection import StratifiedKFold
 from sklearn.tree import DecisionTreeClassifier
-from utilities import data_prep, lr_ensemble, evolutionary, preprocess
+from utilities import data_prep, evolutionary, lr_ensemble, preprocess
 import numpy as np
 
 # GLOBAL SETTINGS HERE
@@ -34,6 +34,9 @@ if __name__ == '__main__':
     agg_accuracies = []
     maj_accuracies = []
 
+    # create the evolutionary class to run
+    e = evolutionary.Evolutionary(num_classifiers=NUM_CLASSIFIERS)
+
     # Begin 5-fold cross-validation
     kf = StratifiedKFold(n_splits=5, shuffle=False)
     fold_number = 1
@@ -51,6 +54,6 @@ if __name__ == '__main__':
 
         # Now evolve an aggregator
         y_expected = preprocess.onehot_encode(y[train_index])
-        evolutionary.run(num_classifiers=NUM_CLASSIFIERS, pop_size=N_POP, n_gen=N_GEN, ensemble_output=ensemble_output, y_expected=y_expected)
+        e.run(pop_size=N_POP, n_gen=N_GEN, ensemble_output=ensemble_output, y_expected=y_expected)
 
         fold_number += 1
