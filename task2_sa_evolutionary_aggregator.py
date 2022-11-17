@@ -1,6 +1,7 @@
 from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
-from utilities import data_prep, evolutionary, lr_ensemble, preprocess
+from utilities import accuracy, data_prep, evolutionary, lr_ensemble, preprocess
 import numpy as np
 
 # GLOBAL SETTINGS HERE
@@ -42,18 +43,43 @@ if __name__ == '__main__':
     fold_number = 1
     for train_index, test_index in kf.split(X, y):
         print(f"FOLD NUMBER {fold_number}")
+        X_base, X_agg, y_base, y_agg = train_test_split(X[train_index], y[train_index], test_size=0.2)
 
         # train each item of the ensemble on a subset of the training data
         for clf in ensemble:
-            lr_ensemble.train_classifier_on_subset(FRACTION, clf, X[train_index], y[train_index])
+            lr_ensemble.train_classifier_on_subset(FRACTION, clf, X_base, y_base)
 
         # take the output of the ensembles' predictions on the training data
         # this is how we will train the aggregator, the test data will be untouched
-        ensemble_output = lr_ensemble.ensemble_predict(ensemble, X[train_index])
+        ensemble_output = lr_ensemble.ensemble_predict(ensemble, X_agg)
         ensemble_output = lr_ensemble.onehot_ensemble_output(ensemble_output)
 
         # Now evolve an aggregator
-        y_expected = preprocess.onehot_encode(y[train_index])
-        e.run(pop_size=N_POP, n_gen=N_GEN, ensemble_output=ensemble_output, y_expected=y_expected)
+        y_expected = preprocess.onehot_encode(y_agg)
+        hall_of_fame = e.run(pop_size=N_POP, n_gen=N_GEN, ensemble_output=ensemble_output, y_expected=y_expected)
+        print(hall_of_fame[0])
+
+        # Now that the aggregators have evolved, we will have the base classifiers make predictions on the test data
+        # These predictions will then be evaluated on the top-ranked aggregator
+        ensemble_output = lr_ensemble.ensemble_predict(ensemble, X[test_index])
+        best_base = lr_ensemble.calc_best_accuracy(ensemble_output, y[test_index])
+        avg_best_base += [best_base]
+        print(f"Best base classifier accuracy= {best_base * 100:.3f}%")
+
+        # One-hot encode the ensemble output that we will be inputting to the aggregator
+        ensemble_output = lr_ensemble.onehot_ensemble_output(ensemble_output)
+
+        # Get the accuracy of the ensemble using a simple majority vote
+        ensemble_votes = lr_ensemble.ensemble_majority_vote(ensemble_output)
+        maj_accuracy = accuracy.accuracy_score(y[test_index], ensemble_votes)
+        maj_accuracies += [maj_accuracy]
+        print(f"Majority vote accuracy= {maj_accuracy * 100:.3f}%")
+
+        # feed these estimates into our best aggregator and get the aggregator's accuracy
+        e.ensemble_output = ensemble_output
+        e.y_expected = preprocess.onehot_encode(y[test_index])
+        agg_accuracy = e.evaluate(hall_of_fame[0])[0]
+        agg_accuracies += [agg_accuracy]
+        print(f"Evolved aggregator accuracy= {agg_accuracy * 100:.3f}%")
 
         fold_number += 1
