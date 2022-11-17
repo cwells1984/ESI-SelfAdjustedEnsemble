@@ -158,7 +158,6 @@ if __name__ == '__main__':
     fold_number = 1
     for train_index, test_index in kf.split(X, y):
         print(f"FOLD NUMBER {fold_number}")
-
         X_base, X_agg, y_base, y_agg = train_test_split(X[train_index], y[train_index], test_size = 0.2)
 
 
