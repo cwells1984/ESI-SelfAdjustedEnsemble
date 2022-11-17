@@ -1,5 +1,6 @@
 from deap import algorithms, base, creator, gp, tools
 from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from utilities import accuracy, lr_ensemble, data_prep, preprocess
 import numpy as np
@@ -158,13 +159,16 @@ if __name__ == '__main__':
     for train_index, test_index in kf.split(X, y):
         print(f"FOLD NUMBER {fold_number}")
 
+        X_base, X_agg, y_base, y_agg = train_test_split(X[train_index], y[train_index], test_size = 0.2)
+
+
         # train each item of the ensemble on a subset of the training data
         for clf in ensemble:
-            lr_ensemble.train_classifier_on_subset(FRACTION, clf, X[train_index], y[train_index])
+            lr_ensemble.train_classifier_on_subset(FRACTION, clf, X_base, y_base)
 
         # take the output of the ensembles' predictions on the training data
         # this is how we will train the aggregator, the test data will be untouched
-        ensemble_output = lr_ensemble.ensemble_predict(ensemble, X[train_index])
+        ensemble_output = lr_ensemble.ensemble_predict(ensemble, X_agg)
         ensemble_output = lr_ensemble.onehot_ensemble_output(ensemble_output)
 
         # Initialize the population and stats we will track
@@ -177,7 +181,7 @@ if __name__ == '__main__':
         stats.register("max", np.max)
 
         # Using the predictions made on the training data, evolve the aggregator
-        y_expected = preprocess.onehot_encode(y[train_index])
+        y_expected = preprocess.onehot_encode(y_agg)
         algorithms.eaSimple(pop, toolbox, cxpb=PROB_CX, mutpb=PROB_MUT, ngen=N_GEN, stats=stats, halloffame=hof, verbose=True)
         print(hof[0])
 
