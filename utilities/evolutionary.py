@@ -3,12 +3,13 @@ import random
 import numpy as np
 
 # Global settings
-MIN_VOTE = 1
-MAX_VOTE = 10
+MIN_VOTE = 0.01
+MAX_VOTE = 1.0
+P_MUT = 0.1
 
 
 def generate_attribute():
-    return np.random.randint(1, 100)
+    return np.random.random()
 
 
 class Evolutionary:
@@ -24,7 +25,6 @@ class Evolutionary:
         self.toolbox.register("population", tools.initRepeat, list, self.toolbox.individual)
 
         # Setup operators
-        # toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=0.1, indpb=0.1)
         self.toolbox.register("select", tools.selTournament, tournsize=3)
         self.toolbox.register("evaluate", self.evaluate)
 
@@ -34,9 +34,10 @@ class Evolutionary:
         # Create list tree_output = the predictions of the members of the ensemble
         tree_output = []
         for i in range(len(self.ensemble_output[0])):
-            res = (individual[0] * self.ensemble_output[0][i]) + (individual[1] * self.ensemble_output[1][i]) + \
-                           (individual[2] * self.ensemble_output[2][i]) + (individual[3] * self.ensemble_output[3][i]) + \
-                           (individual[4] * self.ensemble_output[4][i])
+            res = np.array([0.0, 0.0])
+            for j in range(len(individual)):
+                res += individual[j] * np.array(self.ensemble_output[j][i])
+            res = res.tolist()
             if res is None or type(res) is float:
                 return 0.0,
             tree_output.append(res)
@@ -56,6 +57,24 @@ class Evolutionary:
         for ind, fit in zip(_pop, fitness_values):
             ind.fitness.values = fit
 
+    # Mutate the individual
+    def mutate_individual(self, _individual):
+        delete_fitness = False
+        for i in range(len(_individual)):
+            if np.random.random() < P_MUT:
+                new_attribute = _individual[i] + np.random.uniform(-1.0,1.0)
+                if new_attribute < MIN_VOTE:
+                    new_attribute = MIN_VOTE
+                if new_attribute > MAX_VOTE:
+                    new_attribute = MAX_VOTE
+                _individual[i] = new_attribute
+                delete_fitness = True
+
+        if delete_fitness:
+            del _individual.fitness.values
+
+        return delete_fitness
+
     # The main execution of the evolutionary algorithm
     def run(self, pop_size, n_gen, ensemble_output, y_expected, verbose=True):
         self.ensemble_output = ensemble_output
@@ -63,6 +82,7 @@ class Evolutionary:
 
         # Now execute, first randomly generating the population and evaluating fitness
         pop = self.toolbox.population(n=pop_size)
+
         hof = tools.HallOfFame(20)
         stats = tools.Statistics(lambda ind: ind.fitness.values)
         stats.register("avg", np.mean)
@@ -81,15 +101,7 @@ class Evolutionary:
 
             # apply mutation in offspring
             for mutant in offspring:
-                if random.random() < 0.1:
-                    #toolbox.mutate(mutant)
-                    mutant[0] += np.random.randint(-10, 10)
-                    del mutant.fitness.values
-                    for i in range(len(mutant)):
-                        if mutant[i] < MIN_VOTE:
-                            mutant[i] = MIN_VOTE
-                        if mutant[i] > MAX_VOTE:
-                            mutant[i] = MAX_VOTE
+                mutated = self.mutate_individual(mutant)
 
             # Evaluate the individuals with an invalid fitness
             invalid_ind = [ind for ind in offspring if not ind.fitness.valid]

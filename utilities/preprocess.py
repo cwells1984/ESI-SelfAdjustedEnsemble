@@ -3,7 +3,7 @@ def onehot_encode(l):
     l_onehot = []
     for i in range(len(l)):
         if l[i] == 0:
-            l_onehot += [[1, 0]]
+            l_onehot += [[1.0, 0.0]]
         else:
-            l_onehot += [[0, 1]]
+            l_onehot += [[0.0, 1.0]]
     return l_onehot

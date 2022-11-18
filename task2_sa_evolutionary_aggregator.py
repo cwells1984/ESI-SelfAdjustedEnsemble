@@ -5,7 +5,7 @@ from utilities import accuracy, data_prep, evolutionary, lr_ensemble, preprocess
 import numpy as np
 
 # GLOBAL SETTINGS HERE
-NUM_CLASSIFIERS = 5
+NUM_CLASSIFIERS = 100
 FRACTION=0.2
 BASE_CLASSIFIER = DecisionTreeClassifier()
 N_POP = 100
