@@ -6,7 +6,7 @@ from utilities import accuracy, lr_ensemble, data_prep, preprocess
 import numpy as np
 
 # GLOBAL SETTINGS HERE
-NUM_CLASSIFIERS = 5
+NUM_CLASSIFIERS = 20
 FRACTION=0.2
 BASE_CLASSIFIER = DecisionTreeClassifier()
 N_POP = 100
@@ -108,7 +108,10 @@ def evaluate(individual):
     # Create list tree_output = the predictions of the members of the ensemble
     tree_output = []
     for i in range(len(ensemble_output[0])):
-        res = func(ensemble_output[0][i], ensemble_output[1][i], ensemble_output[2][i], ensemble_output[3][i], ensemble_output[4][i])
+        res = func(ensemble_output[0][i], ensemble_output[1][i], ensemble_output[2][i], ensemble_output[3][i], ensemble_output[4][i],
+                   ensemble_output[5][i], ensemble_output[6][i], ensemble_output[7][i], ensemble_output[8][i], ensemble_output[9][i],
+                   ensemble_output[10][i], ensemble_output[11][i], ensemble_output[12][i], ensemble_output[13][i], ensemble_output[14][i],
+                   ensemble_output[15][i], ensemble_output[16][i], ensemble_output[17][i], ensemble_output[18][i], ensemble_output[19][i])
         #res = func(ensemble_output[0][i], ensemble_output[1][i], ensemble_output[2][i], ensemble_output[3][i], ensemble_output[4][i], ensemble_output[5][i], ensemble_output[6][i], ensemble_output[7][i], ensemble_output[8][i], ensemble_output[9][i])
         if res is None or type(res) is float:
             return 0.0,
