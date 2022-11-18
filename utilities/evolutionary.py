@@ -5,7 +5,7 @@ import numpy as np
 # Global settings
 MIN_VOTE = 0.01
 MAX_VOTE = 1.0
-P_MUT = 0.1
+SIGMA = 0.1
 
 
 def generate_attribute():
@@ -61,14 +61,13 @@ class Evolutionary:
     def mutate_individual(self, _individual):
         delete_fitness = False
         for i in range(len(_individual)):
-            if np.random.random() < P_MUT:
-                new_attribute = _individual[i] + np.random.uniform(-1.0,1.0)
-                if new_attribute < MIN_VOTE:
-                    new_attribute = MIN_VOTE
-                if new_attribute > MAX_VOTE:
-                    new_attribute = MAX_VOTE
-                _individual[i] = new_attribute
-                delete_fitness = True
+            new_attribute = _individual[i] + np.random.normal(0, SIGMA)
+            if new_attribute < MIN_VOTE:
+                new_attribute = MIN_VOTE
+            if new_attribute > MAX_VOTE:
+                new_attribute = MAX_VOTE
+            _individual[i] = new_attribute
+            delete_fitness = True
 
         if delete_fitness:
             del _individual.fitness.values
