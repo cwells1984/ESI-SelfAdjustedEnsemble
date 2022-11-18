@@ -54,7 +54,7 @@ if __name__ == '__main__':
         ensemble_output = lr_ensemble.ensemble_predict(ensemble, X_agg)
         ensemble_output = lr_ensemble.onehot_ensemble_output(ensemble_output)
 
-        # Now evolve an aggregator
+        # Now evolve a aggregator
         y_expected = preprocess.onehot_encode(y_agg)
         hall_of_fame = e.run(pop_size=N_POP, n_gen=N_GEN, ensemble_output=ensemble_output, y_expected=y_expected)
         print(hall_of_fame[0])
