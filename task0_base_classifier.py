@@ -31,9 +31,15 @@ if __name__ == '__main__':
     # y = df.loc[:, df.columns == 'Malignant'].values.ravel()
 
     # ... for Liver
-    df = data_prep.bupa_liver_disorders("./datasets/bupa.data")
+    # df = data_prep.bupa_liver_disorders("./datasets/bupa.data")
+    # X = df.loc[:, df.columns != 'class'].values
+    # y = df.loc[:, df.columns == 'class'].values.ravel()
+
+    # ... for Chess
+    df = data_prep.chess("./datasets/chess.data")
     X = df.loc[:, df.columns != 'class'].values
     y = df.loc[:, df.columns == 'class'].values.ravel()
+    print(X)
 
     # create our classifier
     dt = DecisionTreeClassifier()
