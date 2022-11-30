@@ -109,10 +109,10 @@ if __name__ == '__main__':
                    'bootstrap': bootstrap}
 
     # Create the classifier
-    # rf = RandomForestClassifier()
-    # rf_random = RandomizedSearchCV(estimator=rf, param_distributions=random_grid, n_iter=1000, cv=5, verbose=2, random_state=42, n_jobs=-1)
-    # rf_random.fit(X, y)
-    # print(rf_random.best_params_)
+    rf = RandomForestClassifier()
+    rf_random = RandomizedSearchCV(estimator=rf, param_distributions=random_grid, n_iter=1000, cv=5, verbose=2, random_state=42, n_jobs=-1)
+    rf_random.fit(X, y)
+    print(rf_random.best_params_)
 
     # Tune w/grid search
     max_depth = [2, 8, 16]
