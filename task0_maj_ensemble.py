@@ -17,7 +17,7 @@ def calculate_clf_accuracy(ensemble, X, y):
     kf = StratifiedKFold(n_splits=5, shuffle=False)
     for train_index, test_index in kf.split(X, y):
 
-        ensemble.fit(X, y)
+        ensemble.fit(X[train_index], y[train_index])
 
         # Now find the best base classifier
         best_base_acc = 0
@@ -48,17 +48,17 @@ if __name__ == '__main__':
     # y = df.loc[:, df.columns == 'Malignant'].values.ravel()
 
     # ... for Chess
-    # df = data_prep.chess("./datasets/chess.data")
-    # X = df.loc[:, df.columns != 'class'].values
-    # y = df.loc[:, df.columns == 'class'].values.ravel()
-
-    # ... for Liver
-    df = data_prep.bupa_liver_disorders("./datasets/bupa.data")
+    df = data_prep.chess("./datasets/chess.data")
     X = df.loc[:, df.columns != 'class'].values
     y = df.loc[:, df.columns == 'class'].values.ravel()
 
+    # ... for Liver
+    # df = data_prep.bupa_liver_disorders("./datasets/bupa.data")
+    # X = df.loc[:, df.columns != 'class'].values
+    # y = df.loc[:, df.columns == 'class'].values.ravel()
+
     # create our classifier
-    N_values = [100,300,500]
+    N_values = [1000]
     f_values =[0.2,0.35,0.5]
     for N in N_values:
         for f in f_values:
