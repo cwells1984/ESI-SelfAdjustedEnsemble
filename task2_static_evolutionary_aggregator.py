@@ -10,7 +10,7 @@ NUM_CLASSIFIERS = 100
 FRACTION=0.35
 BASE_CLASSIFIER = DecisionTreeClassifier()
 N_POP = 100
-N_GEN = 100
+N_GEN = 300
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
