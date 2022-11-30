@@ -9,8 +9,8 @@ import numpy as np
 NUM_CLASSIFIERS = 100
 FRACTION=0.35
 BASE_CLASSIFIER = DecisionTreeClassifier()
-N_POP = 100
-N_GEN = 300
+N_POP = 10077777777777777777777777777777777777777
+N_GEN = 1000
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
