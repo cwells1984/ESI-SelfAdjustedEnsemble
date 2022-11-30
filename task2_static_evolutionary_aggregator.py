@@ -1,15 +1,16 @@
 from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import train_test_split
+from sklearn.ensemble import BaggingClassifier
 from sklearn.tree import DecisionTreeClassifier
 from utilities import accuracy, data_prep, evolutionary, lr_ensemble, preprocess
 import numpy as np
 
 # GLOBAL SETTINGS HERE
 NUM_CLASSIFIERS = 100
-FRACTION=0.2
+FRACTION=0.35
 BASE_CLASSIFIER = DecisionTreeClassifier()
 N_POP = 100
-N_GEN = 50
+N_GEN = 100
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -20,18 +21,22 @@ if __name__ == '__main__':
     # X = df.loc[:, df.columns != 'Malignant'].values
     # y = df.loc[:, df.columns == 'Malignant'].values.ravel()
 
+    # ... for Chess
+    # df = data_prep.chess("./datasets/chess.data")
+    # X = df.loc[:, df.columns != 'class'].values
+    # y = df.loc[:, df.columns == 'class'].values.ravel()
+
     # ... for Liver
     df = data_prep.bupa_liver_disorders("./datasets/bupa.data")
     X = df.loc[:, df.columns != 'class'].values
     y = df.loc[:, df.columns == 'class'].values.ravel()
 
-    # create the ensemble
-    ensemble = lr_ensemble.create_ensemble(num_classifiers=NUM_CLASSIFIERS, clf_to_clone=BASE_CLASSIFIER)
-
     # accuracies to average across folds
     avg_best_base = []
     agg_accuracies = []
     maj_accuracies = []
+    avg_weights = []
+    std_weights = []
 
     # create the evolutionary class to run
     e = evolutionary.Evolutionary(num_classifiers=NUM_CLASSIFIERS)
@@ -43,9 +48,12 @@ if __name__ == '__main__':
         print(f"FOLD NUMBER {fold_number}")
         X_base, X_agg, y_base, y_agg = train_test_split(X[train_index], y[train_index], test_size=0.2)
 
-        # train each item of the ensemble on a subset of the training data
-        for clf in ensemble:
-            lr_ensemble.train_classifier_on_subset(FRACTION, clf, X_base, y_base)
+        # create the ensemble and train each base classifier on a subset of the training data
+        # create the ensemble
+        ensemble = BaggingClassifier(base_estimator=DecisionTreeClassifier(), n_estimators=NUM_CLASSIFIERS,
+                                     max_samples=FRACTION)
+        ensemble.fit(X_base, y_base)
+        ensemble = ensemble.estimators_
 
         # take the output of the ensembles' predictions on the training data
         # this is how we will train the aggregator, the test data will be untouched
@@ -56,6 +64,9 @@ if __name__ == '__main__':
         y_expected = preprocess.onehot_encode(y_agg)
         hall_of_fame = e.run(pop_size=N_POP, n_gen=N_GEN, ensemble_output=ensemble_output, y_expected=y_expected)
         print(hall_of_fame[0])
+        weights = hall_of_fame[0:NUM_CLASSIFIERS]
+        avg_weights += [np.mean(weights)]
+        std_weights += [np.std(weights)]
 
         # Now that the aggregators have evolved, we will have the base classifiers make predictions on the test data
         # These predictions will then be evaluated on the top-ranked aggregator
@@ -87,3 +98,4 @@ if __name__ == '__main__':
     print(f"AVERAGE BEST BASE ACCURACY= {np.mean(avg_best_base) * 100:.3f}% ± {np.std(avg_best_base):.3f}")
     print(f"AVERAGE MAJORITY VOTE ACCURACY= {np.mean(maj_accuracies) * 100:.3f}% ± {np.std(maj_accuracies):.3f}")
     print(f"AVERAGE AGGREGATOR VOTE ACCURACY= {np.mean(agg_accuracies) * 100:.3f}% ± {np.std(agg_accuracies):.3f}")
+    print(f"AVERAGE MEAN/STD OF WEIGHTS= {np.mean(avg_weights):.3f}, {np.mean(std_weights):.3f}")
