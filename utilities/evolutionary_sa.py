@@ -1,3 +1,5 @@
+import math
+
 from deap import base, creator, tools
 import random
 import numpy as np
@@ -18,7 +20,7 @@ class Evolutionary:
 
         # DEAP Setup
         creator.create("FitnessMax", base.Fitness, weights=(1.0,))
-        creator.create("Individual", list, fitness=creator.FitnessMax)
+        creator.create("Individual", list, fitness=creator.FitnessMax, old_fitness=0.0)
         self.toolbox = base.Toolbox()
         self.toolbox.register("attribute", generate_attribute)
         self.toolbox.register("individual", tools.initRepeat, creator.Individual, self.toolbox.attribute, n=self.num_classifiers*2)
@@ -57,21 +59,42 @@ class Evolutionary:
         for ind, fit in zip(_pop, fitness_values):
             ind.fitness.values = fit
 
+    # Perform log-normal self-adaptation
+    def self_adapt_log(self, sigma, fitness_delta):
+
+        theta = 0
+        if fitness_delta > 0:
+            theta = 0.5
+        if fitness_delta < 0:
+            theta = -1
+
+        tau_global = 1 / math.sqrt(2 * self.num_classifiers)
+        tau_local = 1 / math.sqrt(2 * math.sqrt(self.num_classifiers))
+        e_exp = theta * np.abs((tau_global * np.random.normal(0.0, 1.0)) + (tau_local * np.random.normal(0.0, 1.0)))
+        new_sigma = sigma * math.e ** e_exp
+        return new_sigma
+
     # Mutate the individual
     def mutate_individual(self, _individual):
         delete_fitness = False
         for i in range(self.num_classifiers):
-            prob_mutation = _individual[i + self.num_classifiers]
-            if np.random.random() < prob_mutation:
-                new_attribute = _individual[i] + np.random.uniform(-1.0,1.0)
-                if new_attribute < MIN_VOTE:
-                    new_attribute = MIN_VOTE
-                if new_attribute > MAX_VOTE:
-                    new_attribute = MAX_VOTE
-                _individual[i] = new_attribute
-                delete_fitness = True
+
+            # update this attribute's sigma value
+            fitness_delta = _individual.fitness.values[0] - _individual.old_fitness
+            sigma = _individual[i + self.num_classifiers]
+            _individual[i + self.num_classifiers] = self.self_adapt_log(sigma, fitness_delta)
+
+            # now mutate the attribute
+            new_attribute = _individual[i] + np.random.normal(0, _individual[i + self.num_classifiers])
+            if new_attribute < MIN_VOTE:
+                new_attribute = MIN_VOTE
+            if new_attribute > MAX_VOTE:
+                new_attribute = MAX_VOTE
+            _individual[i] = new_attribute
+            delete_fitness = True
 
         if delete_fitness:
+            _individual.old_fitness = _individual.fitness.values[0]
             del _individual.fitness.values
 
         return delete_fitness
