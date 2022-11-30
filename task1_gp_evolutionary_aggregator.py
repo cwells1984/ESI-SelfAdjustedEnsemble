@@ -7,12 +7,12 @@ import numpy as np
 
 # GLOBAL SETTINGS HERE
 NUM_CLASSIFIERS = 20
-FRACTION=0.2
+FRACTION=0.5
 BASE_CLASSIFIER = DecisionTreeClassifier()
 N_POP = 100
 N_GEN = 50
 PROB_CX = 0.0
-PROB_MUT = 0.2
+PROB_MUT = 1
 
 
 # PRIMITIVES
@@ -108,11 +108,11 @@ def evaluate(individual):
     # Create list tree_output = the predictions of the members of the ensemble
     tree_output = []
     for i in range(len(ensemble_output[0])):
-        res = func(ensemble_output[0][i], ensemble_output[1][i], ensemble_output[2][i], ensemble_output[3][i], ensemble_output[4][i],
-                   ensemble_output[5][i], ensemble_output[6][i], ensemble_output[7][i], ensemble_output[8][i], ensemble_output[9][i],
-                   ensemble_output[10][i], ensemble_output[11][i], ensemble_output[12][i], ensemble_output[13][i], ensemble_output[14][i],
-                   ensemble_output[15][i], ensemble_output[16][i], ensemble_output[17][i], ensemble_output[18][i], ensemble_output[19][i])
-        #res = func(ensemble_output[0][i], ensemble_output[1][i], ensemble_output[2][i], ensemble_output[3][i], ensemble_output[4][i], ensemble_output[5][i], ensemble_output[6][i], ensemble_output[7][i], ensemble_output[8][i], ensemble_output[9][i])
+        res = func(ensemble_output[0][i], ensemble_output[1][i], ensemble_output[2][i], ensemble_output[3][i],
+                   ensemble_output[4][i], ensemble_output[5][i], ensemble_output[6][i], ensemble_output[7][i],
+                   ensemble_output[8][i], ensemble_output[9][i], ensemble_output[10][i], ensemble_output[11][i],
+                   ensemble_output[12][i], ensemble_output[13][i], ensemble_output[14][i], ensemble_output[15][i],
+                   ensemble_output[16][i], ensemble_output[17][i], ensemble_output[18][i], ensemble_output[19][i])
         if res is None or type(res) is float:
             return 0.0,
         tree_output.append(res)
@@ -143,6 +143,11 @@ if __name__ == '__main__':
     # X = df.loc[:, df.columns != 'Malignant'].values
     # y = df.loc[:, df.columns == 'Malignant'].values.ravel()
 
+    # ... for Chess
+    # df = data_prep.chess("./datasets/chess.data")
+    # X = df.loc[:, df.columns != 'class'].values
+    # y = df.loc[:, df.columns == 'class'].values.ravel()
+
     # ... for Liver
     df = data_prep.bupa_liver_disorders("./datasets/bupa.data")
     X = df.loc[:, df.columns != 'class'].values
@@ -155,6 +160,7 @@ if __name__ == '__main__':
     avg_best_base = []
     agg_accuracies = []
     maj_accuracies = []
+    avg_nodes = []
 
     # Begin 5-fold cross-validation
     kf = StratifiedKFold(n_splits=5, shuffle=False)
@@ -185,6 +191,7 @@ if __name__ == '__main__':
         # Using the predictions made on the training data, evolve the aggregator
         y_expected = preprocess.onehot_encode(y_agg)
         algorithms.eaSimple(pop, toolbox, cxpb=PROB_CX, mutpb=PROB_MUT, ngen=N_GEN, stats=stats, halloffame=hof, verbose=True)
+        avg_nodes += [len(hof[0])]
         print(hof[0])
 
         # Now that the aggregators have evolved, we will have the base classifiers make predictions on the test data
@@ -216,3 +223,4 @@ if __name__ == '__main__':
     print(f"AVERAGE BEST BASE ACCURACY= {np.mean(avg_best_base) * 100:.3f}% ± {np.std(avg_best_base):.3f}")
     print(f"AVERAGE MAJORITY VOTE ACCURACY= {np.mean(maj_accuracies) * 100:.3f}% ± {np.std(maj_accuracies):.3f}")
     print(f"AVERAGE AGGREGATOR VOTE ACCURACY= {np.mean(agg_accuracies) * 100:.3f}% ± {np.std(agg_accuracies):.3f}")
+    print(f"AVERAGE # OF NODES= {np.mean(avg_nodes):.3f}")
