@@ -81,3 +81,9 @@ if __name__ == '__main__':
         print(f"Evolved aggregator accuracy= {agg_accuracy * 100:.3f}%")
 
         fold_number += 1
+
+    # Print the average accuracy of the majority vote and evolved aggregator across folds
+    print("==============================")
+    print(f"AVERAGE BEST BASE ACCURACY= {np.mean(avg_best_base) * 100:.3f}% ± {np.std(avg_best_base):.3f}")
+    print(f"AVERAGE MAJORITY VOTE ACCURACY= {np.mean(maj_accuracies) * 100:.3f}% ± {np.std(maj_accuracies):.3f}")
+    print(f"AVERAGE AGGREGATOR VOTE ACCURACY= {np.mean(agg_accuracies) * 100:.3f}% ± {np.std(agg_accuracies):.3f}")
