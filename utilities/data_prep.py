@@ -27,6 +27,35 @@ def bupa_liver_disorders(csv_file, display_mode=False):
 
 
 # Pre-process the data file
+def chess(csv_file, display_mode=False):
+
+    # Declare the column names
+    col_names = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
+                 "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35",
+                 "36", "winnable"]
+
+    # Read the csv into the dataframe
+    df = pd.read_csv(csv_file, names=col_names)
+
+    # Replace the target variable with 2->1, 1->0
+    df['class'] = df['winnable'].map({"won": 1, "nowin": 0})
+    df.drop(columns=['winnable'], inplace=True)
+    print(df['class'].value_counts())
+
+    # Turn all data columns into categoricals
+    df = pd.get_dummies(data=df, columns=["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18",
+                 "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "33", "34", "35",
+                 "36"])
+    # for col in df.columns:
+    #     if col != 'class':
+    #         df[col] = df[col].astype('category')
+    # print(df.dtypes)
+
+    # Return the pandas dataframe
+    return df
+
+
+# Pre-process the data file
 def breast_cancer_wisconsin(csv_file, display_mode=False):
 
     # Declare the column names
