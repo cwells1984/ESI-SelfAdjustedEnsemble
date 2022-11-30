@@ -26,6 +26,7 @@ class Evolutionary:
 
         # Setup operators
         self.toolbox.register("select", tools.selTournament, tournsize=3)
+        self.toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=SIGMA, indpb=0.1)
         self.toolbox.register("evaluate", self.evaluate)
 
     # Fitness function
@@ -82,7 +83,7 @@ class Evolutionary:
         # Now execute, first randomly generating the population and evaluating fitness
         pop = self.toolbox.population(n=pop_size)
 
-        hof = tools.HallOfFame(20)
+        hof = tools.HallOfFame(1)
         stats = tools.Statistics(lambda ind: ind.fitness.values)
         stats.register("avg", np.mean)
         stats.register("std", np.std)
@@ -100,7 +101,8 @@ class Evolutionary:
 
             # apply mutation in offspring
             for mutant in offspring:
-                mutated = self.mutate_individual(mutant)
+                self.toolbox.mutate(mutant)
+                del mutant.fitness.values
 
             # Evaluate the individuals with an invalid fitness
             invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
